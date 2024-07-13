@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>機器人拳擊賽</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #game {
+            text-align: center;
+        }
+        #gameCanvas {
+            border: 1px solid black;
+            background-color: #e0e0e0;
+        }
+        #timer, #scores {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        #result {
+            font-size: 16px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game">
+        <h1>機器人拳擊賽</h1>
+        <p>機器人A: 按'Z'出拳 | 機器人B: 按'L'出拳</p>
+        <div id="timer">時間: 15秒</div>
+        <div id="scores">機器人A: 0 | 機器人B: 0</div>
+        <canvas id="gameCanvas" width="400" height="300"></canvas>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let scoreA = 0;
+        let scoreB = 0;
+        let timeLeft = 15;
+        let gameInterval;
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function drawRobot(x, y, color, isPunching) {
+            // 身體
+            ctx.fillStyle = color;
+            ctx.fillRect(x - 25, y - 50, 50, 80);
+            
+            // 頭部
+            ctx.fillRect(x - 20, y - 80, 40, 30);
+            
+            // 眼睛
+            ctx.fillStyle = 'white';
+            ctx.fillRect(x - 15, y - 75, 10, 10);
+            ctx.fillRect(x + 5, y - 75, 10, 10);
+            
+            // 手臂
+            if (isPunching) {
+                ctx.fillStyle = color;
+                ctx.fillRect(x + (color === 'blue' ? 25 : -65), y - 40, 40, 20);
+            } else {
+                ctx.fillStyle = color;
+                ctx.fillRect(x + (color === 'blue' ? 25 : -35), y - 40, 10, 60);
+            }
+            
+            // 腿
+            ctx.fillRect(x - 20, y + 30, 15, 40);
+            ctx.fillRect(x + 5, y + 30, 15, 40);
+        }
+
+        function drawRobots(isAPunching, isBPunching) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawRobot(150, 200, 'blue', isAPunching);
+            drawRobot(250, 200, 'red', isBPunching);
+        }
+
+        function updateScores() {
+            document.getElementById('scores').textContent = `機器人A: ${scoreA} | 機器人B: ${scoreB}`;
+        }
+
+        function endGame() {
+            clearInterval(gameInterval);
+            document.removeEventListener('keydown', handleKeyPress);
+            
+            let resultText = `遊戲結束！機器人A得分: ${scoreA}, 機器人B得分: ${scoreB}<br>`;
+            if (scoreA > scoreB) {
+                resultText += "機器人A獲勝！";
+            } else if (scoreB > scoreA) {
+                resultText += "機器人B獲勝！";
+            } else {
+                resultText += "平局！";
+            }
+            resultText += "<br>感謝參與遊戲！<br>祝你有個愉快的一天！";
+            
+            document.getElementById('result').innerHTML = resultText;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key.toLowerCase() === 'z') {
+                scoreA++;
+                drawRobots(true, false);
+                setTimeout(() => drawRobots(false, false), 150);
+            } else if (event.key.toLowerCase() === 'l') {
+                scoreB++;
+                drawRobots(false, true);
+                setTimeout(() => drawRobots(false, false), 150);
+            }
+            updateScores();
+        }
+
+        function startGame() {
+            document.addEventListener('keydown', handleKeyPress);
+            drawRobots(false, false);
+            
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = `時間: ${timeLeft}秒`;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', startGame);
+    </script>
+</body>
+</html>
